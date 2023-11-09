@@ -4,22 +4,84 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
+	"strings"
+	"track/types"
 
 	"github.com/spf13/cobra"
 )
 
+var checkEmoji = "✅"
+var crossEmoji = "❌"
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "track",
-	Short: "Start tracking a new domain",
-	Long: `You can use this command to start tracking your domains. It will return a JS snippet that you can add to your website. 
+	Short: "Start tracking traffic to your websites.",
+	Long: `You can track your websites, all you need to do provide us with your domain name. It will return a JS snippet that you can add to your website. 
 For example:
 	track yourdomain.com
 		`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Help()
+			os.Exit(1)
+		}
+
+		domain := args[0]
+
+		res, err := http.Post("http://localhost:8080/track/"+domain, "text/plain", nil)
+
+		if err != nil {
+			panic(err)
+		}
+
+		defer res.Body.Close()
+
+		if res.StatusCode != 200 {
+
+			body, err := io.ReadAll(res.Body)
+
+			if err != nil {
+				panic(err)
+			}
+
+			var msg types.MessageResponse
+
+			err = json.Unmarshal(body, &msg)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println(crossEmoji + " " + strings.Title(msg.Message))
+			os.Exit(1)
+		}
+
+		res, err = http.Get("http://localhost:8080/tracker")
+
+		if err != nil {
+			panic(err)
+		}
+
+		defer res.Body.Close()
+
+		fmt.Printf(checkEmoji+" Now tracking %s, use the following snippet on all pages:\n", domain)
+
+		body, err := io.ReadAll(res.Body)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(body))
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
