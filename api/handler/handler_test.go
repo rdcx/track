@@ -74,7 +74,7 @@ func TestHit(t *testing.T) {
 
 		hitUrl := "http://test.com/index.html"
 
-		encodedUrl := base64.RawURLEncoding.EncodeToString([]byte(hitUrl))
+		encodedUrl := base64.URLEncoding.EncodeToString([]byte(hitUrl))
 
 		req, err := http.NewRequest("GET", fmt.Sprintf("/hit/%s", encodedUrl), nil)
 		if err != nil {

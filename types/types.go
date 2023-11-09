@@ -7,4 +7,4 @@ type MessageResponse struct {
 	Message string `json:"message"`
 }
 
-type HitMap map[string]map[string]time.Time
+type HitMap map[string]map[string][]time.Time

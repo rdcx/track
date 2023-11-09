@@ -19,7 +19,7 @@ func Init(addr string) {
 }
 
 func decodeUrl(u string) (*url.URL, error) {
-	decoded, err := base64.RawURLEncoding.DecodeString(u)
+	decoded, err := base64.URLEncoding.DecodeString(u)
 	fmt.Println(err)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func Track(c *gin.Context) {
 		return
 	}
 
-	hits[domain] = make(map[string]time.Time)
+	hits[domain] = make(map[string][]time.Time)
 
 	c.JSON(200, gin.H{
 		"message": "ok",
@@ -89,8 +89,11 @@ func Hit(c *gin.Context) {
 		})
 		return
 	}
+	if _, ok := hits[domain][url.String()]; !ok {
+		hits[domain][url.String()] = make([]time.Time, 0)
+	}
 
-	hits[domain][url.String()] = time.Now()
+	hits[domain][url.String()] = append(hits[domain][url.String()], time.Now())
 
 	c.JSON(200, types.MessageResponse{
 		Success: true,
