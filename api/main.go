@@ -18,10 +18,8 @@ func main() {
 
 	r := router.SetUpRouter(pubAddr)
 
-	r.LoadHTMLGlob("templates/*")
-
 	r.GET("/", func(c *gin.Context) {
-		c.HTML(200, "index.tmpl", nil)
+		c.HTML(200, "index.html", nil)
 	})
 
 	r.Run(":" + port)
