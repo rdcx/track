@@ -25,18 +25,34 @@ var rootCmd = &cobra.Command{
 	Long: `You can track your websites, all you need to do provide us with your domain name. It will return a JS snippet that you can add to your website. 
 For example:
 	track yourdomain.com
+
+<script>
+	(function() {
+		var url = window.location.href;
+		fetch("https://trackcmd.com/hit/" + btoa(url));
+	})();
+</script>
 		`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		var domain string
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(1)
+			// TODO: prompt user for domain
+			fmt.Println("Please provide the website domain:")
+			fmt.Scanln(&domain)
+
+			if strings.Contains(domain, "http") {
+				fmt.Println("Please provide the domain name without the protocol (http:// or https://) for example: yourwebsite.com")
+				os.Exit(1)
+			}
+
+			domain = strings.TrimSpace(domain)
+		} else {
+			domain = args[0]
 		}
 
-		domain := args[0]
-
-		res, err := http.Post("http://localhost:8080/track/"+domain, "text/plain", nil)
+		res, err := http.Post("https://trackcmd.com/track/"+domain, "text/plain", nil)
 
 		if err != nil {
 			panic(err)
@@ -64,7 +80,7 @@ For example:
 			os.Exit(1)
 		}
 
-		res, err = http.Get("http://localhost:8080/tracker")
+		res, err = http.Get("http://trackcmd.com/tracker")
 
 		if err != nil {
 			panic(err)
