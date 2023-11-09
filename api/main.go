@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"track/api/router"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -15,6 +17,12 @@ func main() {
 	flag.Parse()
 
 	r := router.SetUpRouter(pubAddr)
+
+	r.LoadHTMLGlob("templates/**/*")
+
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(200, "index.tmpl", nil)
+	})
 
 	r.Run(":" + port)
 }
