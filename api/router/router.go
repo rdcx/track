@@ -27,8 +27,10 @@ func SetUpRouter(pubAddr string) *gin.Engine {
 	r.GET("/hits/:domain", handler.Hits)
 	r.GET("/tracker", handler.Tracker)
 
+	r.LoadHTMLGlob("templates/**/*")
+
 	r.GET("/", func(c *gin.Context) {
-		c.HTML(200, "index.html", nil)
+		c.HTML(200, "index.tmpl", nil)
 	})
 
 	return r
