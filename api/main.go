@@ -18,7 +18,7 @@ func main() {
 
 	r := router.SetUpRouter(pubAddr)
 
-	r.LoadHTMLGlob("templates/**/*")
+	r.LoadHTMLGlob("templates/*")
 
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(200, "index.tmpl", nil)
