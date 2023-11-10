@@ -38,7 +38,7 @@ func tracker() string {
 	return `<script>
 	(function() {
 		var url = window.location.href;
-		fetch("` + serverAddr + `/hit/" + encodeURIComponent(url));
+		fetch("` + serverAddr + `/hit/" + btoa(url));
 	})();
 </script>
 	`
