@@ -7,4 +7,14 @@ type MessageResponse struct {
 	Message string `json:"message"`
 }
 
-type HitMap map[string]map[string][]time.Time
+type TrackResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Key     Key    `json:"key"`
+}
+
+type Domain string
+type Key string
+type Url string
+
+type HitMap map[Domain]map[Key]map[Url][]time.Time

@@ -2,16 +2,18 @@ package handler_test
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"track/api/router"
+	"track/types"
 
 	"github.com/gin-gonic/gin"
 )
 
-func trackDomain(r *gin.Engine, domain string) {
+func trackDomain(r *gin.Engine, domain string) string {
 	req, err := http.NewRequest("POST", "/track/"+domain, nil)
 	if err != nil {
 		panic(err)
@@ -24,6 +26,28 @@ func trackDomain(r *gin.Engine, domain string) {
 	if rr.Code != http.StatusOK {
 		panic("failed to track domain")
 	}
+
+	var resp types.TrackResponse
+
+	json.Unmarshal(rr.Body.Bytes(), &resp)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if resp.Success != true {
+		panic("failed to track domain")
+	}
+
+	if resp.Message != "ok" {
+		panic("failed to track domain")
+	}
+
+	if resp.Key == "" {
+		panic("failed to track domain")
+	}
+
+	return string(resp.Key)
 }
 
 func TestTrack(t *testing.T) {
@@ -43,26 +67,29 @@ func TestTrack(t *testing.T) {
 			t.Errorf("handler returned wrong status code: got %v want %v",
 				rr.Code, http.StatusOK)
 		}
-	})
 
-	t.Run("returns 400 if domain already exists", func(t *testing.T) {
-		r := router.SetUpRouter("http://localhost:8080")
+		var resp types.TrackResponse
 
-		trackDomain(r, "test.com")
-
-		req2, err := http.NewRequest("POST", "/track/test.com", nil)
+		json.Unmarshal(rr.Body.Bytes(), &resp)
 
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		r2 := httptest.NewRecorder()
-		r.ServeHTTP(r2, req2)
-
-		if r2.Code != http.StatusBadRequest {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				r2.Code, http.StatusBadRequest)
+		if resp.Success != true {
+			t.Errorf("handler returned wrong success value: got %v want %v",
+				resp.Success, true)
 		}
+
+		if resp.Message != "ok" {
+			t.Errorf("handler returned wrong message: got %v want %v",
+				resp.Message, "ok")
+		}
+
+		if resp.Key == "" {
+			t.Errorf("handler returned empty key")
+		}
+
 	})
 }
 
@@ -70,13 +97,13 @@ func TestHit(t *testing.T) {
 	t.Run("tracks a hit", func(t *testing.T) {
 		r := router.SetUpRouter("http://localhost:8080")
 
-		trackDomain(r, "test.com")
+		key := trackDomain(r, "test.com")
 
 		hitUrl := "http://test.com/index.html"
 
 		encodedUrl := base64.URLEncoding.EncodeToString([]byte(hitUrl))
 
-		req, err := http.NewRequest("GET", fmt.Sprintf("/hit/%s", encodedUrl), nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("/hit/%s?k=%s", encodedUrl, key), nil)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -80,7 +80,21 @@ For example:
 			os.Exit(1)
 		}
 
-		res, err = http.Get("http://trackcmd.com/tracker")
+		var resp types.TrackResponse
+
+		body, err := io.ReadAll(res.Body)
+
+		if err != nil {
+			panic(err)
+		}
+
+		err = json.Unmarshal(body, &resp)
+
+		if err != nil || !resp.Success || resp.Message != "ok" || resp.Key == "" {
+			panic("failed to track domain")
+		}
+
+		res, err = http.Get("http://trackcmd.com/tracker?k=" + string(resp.Key))
 
 		if err != nil {
 			panic(err)
@@ -90,7 +104,7 @@ For example:
 
 		fmt.Printf(checkEmoji+" Now tracking %s, use the following snippet on all pages:\n", domain)
 
-		body, err := io.ReadAll(res.Body)
+		body, err = io.ReadAll(res.Body)
 
 		if err != nil {
 			panic(err)
