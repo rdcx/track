@@ -1,0 +1,46 @@
+<html data-theme="lofi">
+
+<head>
+    <title>Track | Website traffic analytics without signing up.</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <div class="p-8 max-w-md mx-auto md:flex place-content-center h-screen items-center justify-center">
+        <div class="mb-24">
+            <div x-data="{ 
+                open: false,
+                data: [],
+                loadData() {
+                    this.open = true
+                    fetch('https://trackcmd.com/hits/' + document.querySelector('.domain-input').value + '?k=' + document.querySelector('.key-input').value)
+                        .then(response => {
+                            this.data = response.json()
+                        })
+                } 
+            }">
+                <input type="text" class="input input-bordered domain-input" placeholder="Enter your domain" />
+                <input type="text" class="input input-bordered key-input" placeholder="Enter your tracking key" />
+                <button class="btn btn-lg ml-2" @click="loadData">View data</button>
+
+                <span x-show="open">
+                    <template x-for="hit in data.hits">
+                        <span x-text="hit"></span>
+                    </template>
+                </span>
+            </div>
+        </div>
+    </div>
+    <script>
+        let open = false
+        function loadData() {
+
+        }
+    </script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+</body>
+
+</html>

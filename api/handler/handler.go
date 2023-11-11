@@ -11,17 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var hits types.HitMap
+var hits types.DomainMap
 var serverAddr string = "http://localhost:8080"
 
 func Init(addr string) {
 	serverAddr = addr
-	hits = make(types.HitMap)
+	hits = make(types.DomainMap)
 }
 
 func decodeUrl(u string) (*url.URL, error) {
 	decoded, err := base64.URLEncoding.DecodeString(u)
-	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func randomKey() types.Key {
 	return types.Key(b)
 }
 
-func domainExists(hits types.HitMap, domain types.Domain) bool {
+func domainExists(hits types.DomainMap, domain types.Domain) bool {
 	if _, ok := hits[domain]; ok {
 		return true
 	}
@@ -69,11 +68,11 @@ func Track(c *gin.Context) {
 	}
 
 	if !domainExists(hits, domain) {
-		hits[domain] = make(map[types.Key]map[types.Url][]time.Time)
+		hits[domain] = make(types.KeyMap)
 	}
 
 	key := randomKey()
-	hits[domain][key] = make(map[types.Url][]time.Time)
+	hits[domain][key] = make(types.UrlMap)
 
 	c.JSON(200, types.TrackResponse{
 		Message: "ok",
@@ -133,10 +132,22 @@ func Hit(c *gin.Context) {
 	urlString := types.Url(url.String())
 
 	if _, ok := hits[domain][key]; !ok {
-		hits[domain][key][urlString] = make([]time.Time, 0)
+		hits[domain][key][urlString] = make(types.HitSlice, 0)
 	}
 
-	hits[domain][key][urlString] = append(hits[domain][key][urlString], time.Now())
+	loc := ""
+
+	// if the HTTP_CF_IPCOUNTRY header is set, use that
+	if c.GetHeader("HTTP_CF_IPCOUNTRY") != "" {
+		loc = c.GetHeader("HTTP_CF_IPCOUNTRY")
+	} else {
+		loc = "XX"
+	}
+
+	hits[domain][key][urlString] = append(hits[domain][key][urlString], types.Hit{
+		Loc:  loc,
+		Time: time.Now(),
+	})
 
 	c.JSON(200, types.MessageResponse{
 		Success: true,

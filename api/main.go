@@ -24,5 +24,9 @@ func main() {
 		c.HTML(200, "index.tmpl", nil)
 	})
 
+	r.GET("/graph", func(c *gin.Context) {
+		c.HTML(200, "graph.tmpl", nil)
+	})
+
 	r.Run(":" + port)
 }
