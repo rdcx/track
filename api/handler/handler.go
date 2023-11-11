@@ -137,9 +137,9 @@ func Hit(c *gin.Context) {
 
 	loc := ""
 
-	// if the HTTP_CF_IPCOUNTRY header is set, use that
-	if c.GetHeader("HTTP_CF_IPCOUNTRY") != "" {
-		loc = c.GetHeader("HTTP_CF_IPCOUNTRY")
+	// get the location from cloudflare
+	if c.GetHeader("CF-IPCountry") != "" {
+		loc = c.GetHeader("CF-IPCountry")
 	} else {
 		loc = "XX"
 	}
