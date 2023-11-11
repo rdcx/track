@@ -28,6 +28,7 @@ func decodeUrl(u string) (*url.URL, error) {
 }
 
 func randomKey() types.Key {
+	rand.Seed(time.Now().UnixNano())
 	runes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 	b := make([]rune, 10)
